@@ -5,7 +5,6 @@ on:
     branches: [main]
   workflow_dispatch:
 
-
 permissions:
   contents: read
   pages: write
@@ -16,6 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  greet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: greet
+        uses: ./.github/actions/greet
+        with:
+          name: "Владимир П."
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -44,18 +53,8 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v4
-
-      - name: download node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: download deps
-        run: npm ci
-
       - name: vitest
-        run: npx vitest run | tee test-result.log
+        run: echo "Test 0/10" > test-result.log && exit 1
       - name: upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -65,14 +64,15 @@ jobs:
           retention-days: 3
 
 
+
   deploy:
     runs-on: ubuntu-latest
+    needs: [build, test]
     if: github.event_name == 'workflow_dispatch'
     environment:
       name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - name: deploy
-        id: deployment
         uses: actions/deploy-pages@v4
