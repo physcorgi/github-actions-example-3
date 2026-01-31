@@ -42,8 +42,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: download node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: download deps
+        run: npm ci
+
       - name: vitest
-      - run: npx vitest run | tee test-result.log
+        run: npx vitest run | tee test-result.log
       - name: upload logs
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,4 +74,5 @@ jobs:
 
     steps:
       - name: deploy
+        id: deployment
         uses: actions/deploy-pages@v4
